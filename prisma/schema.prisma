@@ -1,0 +1,66 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./prototype_gps.db"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  email     String?
+  password  String
+  role      String   @default("USER") // ADMIN or USER
+  tickets   Ticket[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Location {
+  id        String   @id @default(uuid())
+  name      String
+  tickets   Ticket[]
+  createdAt DateTime @default(now())
+}
+
+model CameraType {
+  id        String        @id @default(uuid())
+  name      String
+  photos    TicketPhoto[]
+  createdAt DateTime      @default(now())
+}
+
+model Ticket {
+  id           String        @id @default(uuid())
+  ticketNumber String        @unique
+  userId       String
+  user         User          @relation(fields: [userId], references: [id])
+  locationId   String
+  location     Location      @relation(fields: [locationId], references: [id])
+  status       String        @default("PENDING_APPROVAL") // DRAFT, PENDING_APPROVAL, APPROVED, REJECTED
+  approverUsername String?
+  note         String?
+  reason       String?
+  latitude     Float
+  longitude    Float
+  photos       TicketPhoto[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model TicketPhoto {
+  id           String      @id @default(uuid())
+  ticketId     String
+  ticket       Ticket      @relation(fields: [ticketId], references: [id])
+  type         String      @default("LOCATION") 
+  cameraTypeId String?
+  cameraType   CameraType? @relation(fields: [cameraTypeId], references: [id])
+  filePath     String
+  note         String?
+  createdAt    DateTime    @default(now())
+}
