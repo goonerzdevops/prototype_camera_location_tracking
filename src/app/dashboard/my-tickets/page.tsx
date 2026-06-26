@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { PrismaClient } from "@prisma/client";
 import Link from "next/link";
 import { Eye, ArrowLeft } from "lucide-react";
+import SignOutButton from "@/components/SignOutButton";
 
 const prisma = new PrismaClient();
 
@@ -32,9 +33,7 @@ export default async function MyTicketsPage() {
           </div>
           <div style={styles.userSection}>
             <span style={styles.username}>{session.user.name}</span>
-            <Link href="/api/auth/signout" style={styles.logoutBtn}>
-              Sign Out
-            </Link>
+            <SignOutButton style={styles.logoutBtn}>Sign Out</SignOutButton>
           </div>
         </div>
       </header>

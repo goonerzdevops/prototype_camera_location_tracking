@@ -16,7 +16,8 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    redirect("/");
+    // Sertakan callbackUrl agar setelah login langsung redirect ke halaman ticket ini
+    redirect(`/?callbackUrl=/dashboard/ticket/${resolvedParams.id}`);
   }
 
   // Fetch ticket with relations
@@ -129,6 +130,41 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
             {session.user.role === "USER" && ticket.status === "PENDING_APPROVAL" && (
               <CancelTicketButton ticketId={ticket.id} />
             )}
+
+            {session.user.role === "USER" && ticket.status === "REJECTED" && (
+              <div style={{ marginTop: "2rem", borderTop: "2px solid #fee2e2", paddingTop: "1.5rem" }}>
+                <div style={{
+                  backgroundColor: "#fff1f2", border: "1px solid #fda4af", borderRadius: "8px",
+                  padding: "1rem 1.25rem", marginBottom: "1.25rem",
+                  display: "flex", alignItems: "flex-start", gap: "0.75rem"
+                }}>
+                  <span style={{ fontSize: "1.25rem" }}>⚠️</span>
+                  <div>
+                    <p style={{ margin: 0, fontWeight: "700", color: "#b91c1c", fontSize: "0.9rem" }}>
+                      Ticket Rejected
+                    </p>
+                    <p style={{ margin: "0.25rem 0 0", color: "#9f1239", fontSize: "0.875rem", lineHeight: "1.5" }}>
+                      You can edit and revise this ticket, then resubmit for approval.
+                    </p>
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
+                  <Link
+                    href={`/dashboard/ticket/${ticket.id}/edit`}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: "0.5rem",
+                      padding: "0.75rem 1.5rem", borderRadius: "8px",
+                      border: "1px solid #cbd5e1", backgroundColor: "#f8fafc",
+                      color: "#475569", fontWeight: "600", fontSize: "0.9rem",
+                      textDecoration: "none",
+                    }}
+                  >
+                    ✏️ Edit &amp; Revise
+                  </Link>
+                </div>
+              </div>
+            )}
+
 
           </div>
         </div>

@@ -1,11 +1,12 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -23,10 +24,13 @@ export default function LoginPage() {
     });
 
     if (res?.error) {
-      setError("Invalid email or password.");
+      setError("Invalid username or password.");
       setLoading(false);
     } else {
-      router.push("/dashboard"); // We will create this in Phase 2
+      // Redirect ke callbackUrl jika ada (misal dari link email ticket)
+      // Fallback ke /dashboard jika tidak ada
+      const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+      router.push(callbackUrl);
     }
   };
 
@@ -67,6 +71,14 @@ export default function LoginPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: "100vh", backgroundColor: "#eef2f6" }} />}>
+      <LoginForm />
+    </Suspense>
   );
 }
 

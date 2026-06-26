@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { Menu, X, LayoutDashboard, MapPin, Camera, LogOut, Users } from "lucide-react";
 
 export default function AdminNavigation({ username }: { username: string }) {
@@ -30,9 +31,12 @@ export default function AdminNavigation({ username }: { username: string }) {
           </div>
           <div style={styles.userSection}>
             <span style={styles.userEmail}>{username}</span>
-            <Link href="/api/auth/signout" style={styles.logoutBtn}>
+            <button
+              onClick={() => signOut({ callbackUrl: `${window.location.origin}/` })}
+              style={{ ...styles.logoutBtn, background: "none", border: "none", cursor: "pointer" }}
+            >
               <LogOut size={16} /> Sign Out
-            </Link>
+            </button>
           </div>
         </div>
       </header>

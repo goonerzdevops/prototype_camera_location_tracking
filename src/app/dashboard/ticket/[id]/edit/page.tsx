@@ -27,7 +27,7 @@ export default async function EditTicketPage({ params }: { params: Promise<{ id:
     redirect("/dashboard");
   }
 
-  if (ticket.userId !== session.user.id || ticket.status !== "DRAFT") {
+  if (ticket.userId !== session.user.id || !["DRAFT", "REJECTED"].includes(ticket.status)) {
     redirect(`/dashboard/ticket/${ticket.id}`);
   }
 
@@ -67,7 +67,9 @@ export default async function EditTicketPage({ params }: { params: Promise<{ id:
           }}>
             <ArrowLeft size={20} /> Back to Ticket Details
           </Link>
-          <h1 style={{ fontSize: "1.5rem", fontWeight: "700", color: "#0f172a", margin: 0 }}>Edit Draft Ticket</h1>
+          <h1 style={{ fontSize: "1.5rem", fontWeight: "700", color: "#0f172a", margin: 0 }}>
+            {ticket.status === "REJECTED" ? "✏️ Revise Rejected Ticket" : "Edit Draft Ticket"}
+          </h1>
         </div>
 
         <TicketForm 

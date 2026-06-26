@@ -99,7 +99,10 @@ export async function POST(req: Request) {
 
     // Send email notification to Admin if it's not a draft
     if (ticket.status === "PENDING_APPROVAL") {
-      const appUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+      // Ambil URL dari request header agar support multiple IP (ganti jaringan tidak perlu update config)
+      const host = req.headers.get("host") || "localhost:3000";
+      const protocol = req.headers.get("x-forwarded-proto") || "https";
+      const appUrl = `${protocol}://${host}`;
 
       // Get all Admin emails from the database
       const admins = await prisma.user.findMany({

@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { PrismaClient } from "@prisma/client";
 import fs from "fs";
 import path from "path";
+import { sendAdminNotification } from "@/lib/email";
 
 const prisma = new PrismaClient();
 
@@ -40,7 +41,30 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         where: { id: resolvedParams.id },
         data: { status: "PENDING_APPROVAL" },
       });
+
+      // Kirim email notifikasi ke semua admin
+      const host = req.headers.get("host") || "localhost:3000";
+      const protocol = req.headers.get("x-forwarded-proto") || "https";
+      const appUrl = `${protocol}://${host}`;
+
+      const admins = await prisma.user.findMany({
+        where: { role: "ADMIN", email: { not: null } },
+      });
+
+      for (const admin of admins) {
+        if (admin.email) {
+          sendAdminNotification(
+            admin.email,
+            updatedTicket.ticketNumber,
+            session.user.name || session.user.email || "User",
+            updatedTicket.id,
+            appUrl
+          ).catch(console.error);
+        }
+      }
+
       return NextResponse.json({ success: true, ticket: updatedTicket });
+
     }
 
     if (session.user.role === "ADMIN") {
@@ -153,8 +177,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
     
-    if (ticket.status !== "DRAFT") {
-      return NextResponse.json({ error: "Only DRAFT tickets can be edited" }, { status: 400 });
+    if (!["DRAFT", "REJECTED"].includes(ticket.status)) {
+      return NextResponse.json({ error: "Only DRAFT or REJECTED tickets can be edited" }, { status: 400 });
     }
 
     const uploadsDir = path.join(process.cwd(), "public", "uploads");
@@ -220,6 +244,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     }
 
     // 3. Update Ticket Info
+    // Gunakan status dari request body — bisa DRAFT (Save as Draft) atau PENDING_APPROVAL (Final Submit)
+    // Ticket REJECTED diizinkan transisi ke DRAFT atau PENDING_APPROVAL sesuai pilihan user
     const updatedTicket = await prisma.ticket.update({
       where: { id: ticket.id },
       data: {
@@ -230,6 +256,29 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         status: status || "DRAFT",
       }
     });
+
+    // Kirim email ke admin jika ticket di-resubmit (REJECTED → PENDING_APPROVAL)
+    if (updatedTicket.status === "PENDING_APPROVAL") {
+      const host = req.headers.get("host") || "localhost:3000";
+      const protocol = req.headers.get("x-forwarded-proto") || "https";
+      const appUrl = `${protocol}://${host}`;
+
+      const admins = await prisma.user.findMany({
+        where: { role: "ADMIN", email: { not: null } },
+      });
+
+      for (const admin of admins) {
+        if (admin.email) {
+          sendAdminNotification(
+            admin.email,
+            updatedTicket.ticketNumber,
+            session.user.name || session.user.email || "User",
+            updatedTicket.id,
+            appUrl
+          ).catch(console.error);
+        }
+      }
+    }
 
     return NextResponse.json({ success: true, ticket: updatedTicket });
 

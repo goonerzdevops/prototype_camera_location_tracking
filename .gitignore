@@ -35,9 +35,14 @@ Thumbs.db
 *.tsbuildinfo
 
 # Prisma
-/prisma/dev.db
-/prisma/dev.db-journal
+/prisma/*.db
+/prisma/*.db-journal
 
 # Gemini AI / Agents logs
 .agents/
 checkpoint/
+
+# Uploaded ticket photos — jangan di-commit (data user, bisa besar)
+public/uploads/*
+# Tetap track folder uploads agar ada saat fresh clone
+!public/uploads/.gitkeep

@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { PlusCircle, List } from "lucide-react";
+import SignOutButton from "@/components/SignOutButton";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -23,9 +24,7 @@ export default async function DashboardPage() {
           <h1 className="resp-page-title" style={styles.title}>Dashboard</h1>
           <div style={styles.userSection}>
             <span style={styles.username}>{session.user.name}</span>
-            <Link href="/api/auth/signout" style={styles.logoutBtn}>
-              Sign Out
-            </Link>
+            <SignOutButton style={styles.logoutBtn}>Sign Out</SignOutButton>
           </div>
         </div>
       </header>
