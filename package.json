@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "update:no-response": "npx tsx prisma/update_no_response.ts",
+    "truncate:tickets": "npx tsx prisma/truncate_tickets.ts",
+    "backdate:tickets": "npx tsx prisma/backdate_tickets.ts"
   },
   "dependencies": {
     "@getbrevo/brevo": "^5.0.4",
